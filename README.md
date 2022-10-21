@@ -1,6 +1,7 @@
 # eJPT/Pen-Testing Notes
 These are my personal notes and commands to use for the eJPT and general pen-testing.
 
+Any links you see refer to the section it resides in.
 
 ## Ping Sweeps
 
@@ -26,6 +27,10 @@ The following are some commonly used scan techniques:
 `-A: Aggressive option`
 
 ***This scans the target with multiple options as service detection (-sV), OS detection (-O), traceroute (--traceroute), and with the default NSE scripts (-sC).***
+
+`-sA: TCP ACK scan`
+
+***This scan only sends a TCP packet with only the ACK flag. The packets with the ACK flag are often passed by the firewall because the firewall cannot determine whether the connection was first established from the external network or the internal network.***
 
 `-sC: Script scan`
   
@@ -58,6 +63,10 @@ The following are some commonly used scan techniques:
 `-sV: Version Detection`
 
 ***This technique is used to find out about specific service running on open port, it’s version and product Name. It is not used to detect open ports. However, this scan needs open ports in order to detect the version.***
+
+`--packet-trace`
+
+***Nmap will create an additional line of output for every packet sent or received.***
 
 ## Enumerating the Hosts Found on the Network
 
@@ -94,8 +103,6 @@ There are 6 different states for a scanned port:
 
 ***This state only occurs in the IP ID idle scans and indicates that it was impossible to determine if the scanned port is closed or filtered by a firewall***
 
-### Service Enumeration and Detection:
-
 ### OS Detection:
 
 **OS Fingerprinting**
@@ -119,6 +126,18 @@ You can fine-tune the OS fingerprinting process by using the following options:
     `--osscan-limit: Limit OS detection to promising targets`
     `--osscan-guess: Guess the OS more aggressively`
 
+### Timing:
+Nmap offers six different timing templates to use. The 0-5 values dertimine the aggressiveness of the scan:
+
+`-T 0 : -T paranoid`
+`-T 1 : -T sneaky`
+`-T 2 : -T polite`
+`-T 3 : -T normal` ***This one is used by default, so it will not do anything***
+`-T 4 : -T aggressive`
+`-T 5 : -T insane`
+
+https://nmap.org/book/performance-timing-templates.html
+
 **Nmap TCP Quick Scan**
 
 '''
@@ -137,29 +156,98 @@ nmap -sC -sV -p- {IP Address}
 nmap -sU -sV {IP Address}
 '''
 
+### Testing Firewalls: 
+
+If you run into this result when running an nmap scan:
+
+`Too many fingerprints match this host to give specific OS details`
+
+Manually specify the source IP address to test if we get better results.
+
+`sudo nmap **IP we're testing** -n -p **port that is giving the result** -O -S ***different source IP** -e tun0`
+
+example: `sudo nmap 10.43.1.27 -n -p 445 -O -S 10.43.1.200 -e tun0`
+
+### DNS Proxying:
+
+By default, Nmap performs a reverse DNS resolution unless otherwise specified to find more important information about our target. These DNS queries are also passed in most cases because the given web server is supposed to be found and visited. The DNS queries are made over the UDP port 53. The TCP port 53 was previously only used for the so-called "Zone transfers" between the DNS servers or data transfer larger than 512 bytes. 
+
+Nmap gives us a way to specify DNS servers ourselves `--dns-server <ns>,<ns>`
+
+This means we could use them to interact with the hosts of the internal network. Moreover, we can use TCP port 53 as a source port (--source-port) for our scans. If the administrator uses the firewall to control this port and does not filter IDS/IPS properly, our TCP packets will be trusted and passed through.
+
+For example, say we run this **SYN-Scan of a filtered port:**
+
+`sudo nmap 10.134.3.28 -p50000 -sS -Pn -n --disable-arp-ping --packet-trace`
+
+And we get this result:
+
+`PORT      STATE    SERVICE`
+`50000/tcp filtered ibm-db2`
+
+Now let's try running a **SYN-Scan from a DNS Port:**
+
+`sudo nmap 10.134.3.28 -p50000 -sS -Pn -n --disable-arp-ping --packet-trace --source-port 53`
+
+We instead get this result:
+
+`PORT      STATE SERVICE`
+`50000/tcp open  ibm-db2`
+`MAC Address: DE:AD:00:00:BE:EF (Intel Corporate)`
+
+Now that we have found out that the firewall accepts TCP port 53, it is very likely that IDS/IPS filters might also be configured much weaker than others. We can test this by trying to connect to this port by using Netcat.
+
+**Connect to the filtered port wit Netcat:**
+
+`ncat -nv --source-port 53 10.134.3.28 50000`
+
+If it's successful, you would see something like the following:
+
+`Ncat: Version 7.80 ( https://nmap.org/ncat )`
+`Ncat: Connected to 10.129.2.28:50000.`
+`220 ProFTPd`
+
 **Find Common Vulnerabilities**
 
 **Common Ports with Vulnerabilities**
 
-Port	Protocol
-21	    FTP
-22	    SSH
-23	    TELNET
-25	    SMTP
-53	    DNS
-80	    HTTP
-443	    HTTPS
-110	    POP3
-115	    SFTP
-143	    IMAP
-135	    MSRPC
-137	    NETBIOS
-138	    NETBIOS
-139	    NETBIOS
-445	    SMB
-3306	MYSQL
-1433	MYSQL
-3389	RDP
+**Port: Protocol**
+
+`21: FTP`
+
+`22: SSH`
+
+`23: TELNET`
+
+`25: SMTP`
+
+`53: DNS`
+
+`80: HTTP`
+
+`443: HTTPS`
+
+`110: POP3`
+
+`115: SFTP`
+
+`143: IMAP`
+
+`135: MSRPC`
+
+`137: NETBIOS`
+
+`138: NETBIOS`
+
+`139: NETBIOS`
+
+`445: SMB`
+
+`3306: MYSQL`
+
+`1433: MYSQL`
+
+`3389: RDP`
 
 **Use Nmap as a Lightweight Vulnerability Scanner**
 
