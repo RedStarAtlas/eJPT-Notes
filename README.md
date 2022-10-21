@@ -58,7 +58,7 @@ The following are some commonly used scan techniques:
 
 `-sU: UDP scan`
 
-***If, sU receives an error message stating that the ICMP is unreachable, this means that the port is closed. But, if gets any approachable response, then it means the port is open.***
+***If sU receives an error message stating that the ICMP is unreachable, this means that the port is closed. But, if gets any approachable response, then it means the port is open.***
 
 `-sV: Version Detection`
 
