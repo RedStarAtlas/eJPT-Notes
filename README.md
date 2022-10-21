@@ -24,35 +24,69 @@ The syntax for Nmap looks like the following:
 The following are some commonly used scan techniques:
 
 `-sC: Script scan`
+ ' '
 ***Runs a set of default scripts against the target(s)***
 
 `-sF: FIN scan`
+ ' ' 
 ***Sometimes, because of firewall, SYN Packets might be blocked. In such case, FIN Scan works by by passing the firewall. FIN packets are send to closed ports, if no response is received, it is because either the packet is dropped by firewall or the port is open.***
 
 `-sI: Idle scan`
+' '
 ***Idle scan is an advance scan that does not send any packets from your IP address, instead it uses another host from the target network to send the packets.***
 
 `-sP: Ping scan`
+' '
 ***This technique is only used to find out whether the host is available or not. Ping Scan is not used to detect open ports.***
 
 `-sS: TCP SYN scan`
+' '
 ***Nmap sends SYN packets to the destination, but does not create any session. As a result, target computer won’t be able to create any log of interaction as no session was initiated.***
 
 `-sT: TCP Connect() scan`
+' '
 ***UNIX socket uses a system call named connect() to begin TCP connection and if it succeeds, connection can be made and if it fails, connections cannot be made, basically because the port might be closed.***
 
 `-sU: UDP scan`
+' '
 ***If, sU receives an error message stating that the ICMP is unreachable, this means that the port is closed. But, if gets any approachable response, then it means the port is open.***
 
 `-sV: Version Detection`
+' '
 ***This technique is used to find out about specific service running on open port, it’s version and product Name. It is not used to detect open ports. However, this scan needs open ports in order to detect the version.***
 
 ## Enumerating the Hosts Found on the Network
 
 ### Host Discovery:
 
+Always store every single scan.
+`sudo nmap 1.2.3.0/24 -sn -oA tnet | grep for | cut -d" " -f5`
 
 ### Port Scanning:
+
+There are 6 different states for a scanned port:
+**open:**	
+' '
+***This indicates that the connection to the scanned port has been established. These connections can be TCP connections, UDP datagrams as well as SCTP associations.***
+
+**closed:**
+' '
+***When the port is shown as closed, the TCP protocol indicates that the packet we received back contains an RST flag. This scanning method can also be used to determine if our target is alive or not.***
+***filtered:***	
+' '
+***Nmap cannot correctly identify whether the scanned port is open or closed because either no response is returned from the target for the port or we get an error code from the target.***
+
+**unfiltered:**
+' '
+***This state of a port only occurs during the TCP-ACK scan and means that the port is accessible, but it cannot be determined whether it is open or closed.***
+
+**open|filtered:**
+' '
+***If we do not get a response for a specific port, Nmap will set it to that state.This indicates that a firewall or packet filter may protect the port.***
+
+**closed|filtered:**	
+' '
+***This state only occurs in the IP ID idle scans and indicates that it was impossible to determine if the scanned port is closed or filtered by a firewall***
 
 ### Service Enumeration and Detection:
 
