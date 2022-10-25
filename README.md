@@ -394,5 +394,5 @@ It is reccommended to first test to see whether we can get in using default serv
 You can find a list of default username/password pairs here:
 `/opt/useful/SecLists/Passwords/Default-Credentials`
 
-'hydra -C /opt/useful/SecLists/Passwords/Default-Credentials/ftp-betterdefaultpasslist.txt *IP_Addr* -s 31099 http-get /`
+`hydra -C /opt/useful/SecLists/Passwords/Default-Credentials/ftp-betterdefaultpasslist.txt *IP_Addr* -s 31099 http-get /`
 
