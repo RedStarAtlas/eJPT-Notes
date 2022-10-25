@@ -138,6 +138,8 @@ Nmap offers six different timing templates to use. The 0-5 values dertimine the 
 
 https://nmap.org/book/performance-timing-templates.html
 
+Anything after this line is not organized. Consider it chaos notes until it's better organized.
+
 **Nmap TCP Quick Scan**
 
 '''
@@ -308,7 +310,6 @@ Vulnerable FTP Versions:
 
 **Searchsploit**
 
-**Hydra**
 
 **Port 445 -SMB Enumeration**
 
@@ -386,3 +387,12 @@ wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/
 wfuzz search with files:
 '''wfuzz -c -z file,/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --sc 200 http://10.10.10.10/FUZZ
 '''
+
+## Hydra
+### Default Passwords
+It is reccommended to first test to see whether we can get in using default service passwords.
+You can find a list of default username/password pairs here:
+`/opt/useful/SecLists/Passwords/Default-Credentials`
+
+'hydra -C /opt/useful/SecLists/Passwords/Default-Credentials/ftp-betterdefaultpasslist.txt *IP_Addr* -s 31099 http-get /`
+
